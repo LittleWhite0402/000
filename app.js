@@ -1,10 +1,16 @@
-// 初始化 GUN
+// 初始化 GUN，添加多個備用節點
 const gun = Gun({
-    peers: ['https://gun-manhattan.herokuapp.com/gun']
+    peers: [
+        'https://gun-manhattan.herokuapp.com/gun',
+        'https://gun-us.herokuapp.com/gun',
+        'https://gun-eu.herokuapp.com/gun'
+    ],
+    localStorage: false, // 避免本地儲存衝突
+    retry: 999999 // 持續嘗試重新連線
 });
 
 // 遊戲狀態
-const gameState = gun.get('go-game');
+const gameState = gun.get('go-game-' + Math.random().toString(36).substring(7)); // 隨機遊戲房間
 const BOARD_SIZE = 19;
 const CELL_SIZE = 30;
 const STONE_RADIUS = 13;
@@ -276,30 +282,56 @@ function updateScore() {
         `黑：${scores.black} 白：${scores.white}`;
 }
 
-// 更新遊戲狀態到 GUN
+// 修改 updateGameState 函數，添加錯誤處理
 function updateGameState() {
-    gameState.put({
-        board: board,
-        currentPlayer: currentPlayer,
-        players: players,
-        lastMove: lastMove,
-        passCount: passCount
-    });
+    try {
+        gameState.put({
+            board: board,
+            currentPlayer: currentPlayer,
+            players: players,
+            lastMove: lastMove,
+            passCount: passCount
+        });
+    } catch (error) {
+        console.error('更新遊戲狀態失敗：', error);
+        alert('連線出現問題，請重新整理頁面');
+    }
 }
 
-// 監聽遊戲狀態變化
+// 修改監聽函數，添加錯誤處理
 gameState.on(function(data) {
-    if (data && data.board) {
-        board = data.board;
-        currentPlayer = data.currentPlayer;
-        players = data.players;
-        lastMove = data.lastMove;
-        passCount = data.passCount;
-        drawBoard();
-        updateTurnDisplay();
-        updateScore();
+    try {
+        if (data && data.board) {
+            board = data.board;
+            currentPlayer = data.currentPlayer;
+            players = data.players;
+            lastMove = data.lastMove;
+            passCount = data.passCount;
+            drawBoard();
+            updateTurnDisplay();
+            updateScore();
+            
+            // 顯示最後一手的位置
+            if (lastMove) {
+                highlightLastMove(lastMove.row, lastMove.col);
+            }
+        }
+    } catch (error) {
+        console.error('處理遊戲狀態更新失敗：', error);
     }
-});
+}, true); // 添加 true 參數來確保不會遺漏更新
+
+// 新增函數：標示最後一手
+function highlightLastMove(row, col) {
+    if (lastMove) {
+        ctx.beginPath();
+        ctx.arc(col * CELL_SIZE + CELL_SIZE/2, 
+                row * CELL_SIZE + CELL_SIZE/2, 
+                5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff0000';
+        ctx.fill();
+    }
+}
 
 // 更新回合顯示
 function updateTurnDisplay() {
