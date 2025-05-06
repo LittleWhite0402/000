@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圍棋遊戲</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- GUN.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/webrtc.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>圍棋遊戲</h1>
+        <div class="game-container">
+            <div class="game-info">
+                <div id="player-turn">等待加入遊戲...</div>
+                <div id="score">黑：0 白：0</div>
+                <button id="join-game">加入遊戲</button>
+                <button id="pass">虛手</button>
+                <button id="reset-game">重新開始</button>
+            </div>
+            <canvas id="board"></canvas>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
